@@ -20,10 +20,10 @@ import javax.swing.JPanel;
  */
 public class GamePanel extends JPanel
 {
-    // Width of the game window
+    // Width of the game window //
     private final int WINDOW_WIDTH = 700;
 
-    // Height of the game window
+    // Height of the game window //
     private final int WINDOW_HEIGHT = 700;
 
     /**
@@ -31,17 +31,16 @@ public class GamePanel extends JPanel
      */
     public GamePanel()
     {
-        // Set the size of the panel
+        // Set the size of the panel //
         setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
 
-        // Set the background colour
+        // Set the background colour //
         setBackground(Color.BLACK);
     }
 
     /**
      * Draws everything that appears on the screen.
      *
-     * @param g Graphics object used for drawing.
      */
     @Override
     protected void paintComponent(Graphics g)
@@ -54,23 +53,22 @@ public class GamePanel extends JPanel
     /**
      * Draws the first version of the game board.
      *
-     * @param g Graphics object used for drawing.
      */
     private void draw(Graphics g)
     {
-        // Draw the white border around the playing area
+        // Draw the white border around the playing area //
         g.setColor(Color.WHITE);
         g.drawRect(50, 50, 600, 600);
 
-        // Draw the title bar to match the first blueprint
+        // Draw the title bar to match the first blueprint //
         g.setColor(new Color(15, 32, 90));
         g.fillRect(0, 0, WINDOW_WIDTH, 40);
 
-        // Display the title of the game
+        // Display the title of the game //
         g.setColor(Color.WHITE);
         g.drawString("Snake", 20, 25);
 
-        // Draw a placeholder for the help button
+        // Draw a placeholder for the help button //
         g.drawString("?", 660, 25);
     }
 }
