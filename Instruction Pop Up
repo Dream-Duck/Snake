@@ -1,0 +1,76 @@
+
+/**
+ * InstructionPopup.
+ * Displays the instructions before the player starts the game.
+ * 
+ *
+ * @author Zahra Salemi
+ * @version 2026
+ */
+import java.awt.BorderLayout;
+import java.awt.Font;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+
+public class InstructionPopup extends JDialog
+{
+    /**
+     * Creates the instruction window.
+     */
+    public InstructionPopup()
+    {
+        // Sets the title of the pop up //
+        setTitle("Snake Instructions");
+
+        // Sets the size of the window //
+        setSize(450, 400);
+
+        // Displays the pop up in the centre of the screen //
+        setLocationRelativeTo(null);
+
+        // Prevents the player from resizing it //
+        setResizable(false);
+
+        // Stops the player interacting with the game until it is closed //
+        setModal(true);
+
+        // Closes only this window //
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+        // Creates the title //
+        JLabel title = new JLabel("Snake Instructions", JLabel.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 40));
+
+        // Creates the instructions //
+        JTextArea instructions = new JTextArea();
+
+        instructions.setEditable(false);
+        instructions.setText(
+            " Instructions\n\n" +
+            " - Use the Arrow Keys to move.\n\n" +
+            " Rules\n\n" +
+            " - Eat food to grow.\n" +
+            " - Don't hit the walls.\n" +
+            " - Don't hit yourself.\n\n"
+        );
+
+        // Creates the close button //
+        JButton closeButton = new JButton("Close");
+
+        // Closes the instructions when pressed //
+        closeButton.addActionListener(e -> dispose());
+
+        // Stores the button in its own panel //
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.add(closeButton);
+
+        // Adds everything into the window //
+        add(title, BorderLayout.NORTH);
+        add(instructions, BorderLayout.CENTER);
+        add(bottomPanel, BorderLayout.SOUTH);
+    }
+}
+
