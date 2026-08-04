@@ -31,6 +31,9 @@ public class SnakeGame
         // Creates the Game Panel //
         GamePanel gamePanel = new GamePanel();
         
+        // Creates the instruction pop up //
+        InstructionPopup instructions = new InstructionPopup();
+        
         // Add the game panel into the window //
         window.add(gamePanel);
         
@@ -42,6 +45,9 @@ public class SnakeGame
         
         // Displays the window //
         window.setVisible(true);
+        
+        // Displays the instructions before the game begins //
+        instructions.setVisible(true);
         
     }
 
