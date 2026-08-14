@@ -63,21 +63,24 @@ public class GamePanel extends JPanel implements KeyListener
     // The button used to open the settings
     private JButton settingsButton;
 
-    // The snake's current horizontal position
-    private double snakeX;
+    // The snake's current horizontal grid position
+    private int snakeX;
 
-    // The snake's current vertical position
-    private double snakeY;
+    // The snake's current vertical grid position
+    private int snakeY;
 
     // The direction the snake is currently moving
     private int directionX;
     private int directionY;
 
+    // Keeps track of whether the game has started
+    private boolean gameStarted;
+    
     // The timer used to move the snake smoothly
     private Timer movementTimer;
 
     // The speed of the snake in pixels per timer update
-    private final double SNAKE_SPEED = 2.5;
+    private final int SNAKE_SPEED = 2;
 
     /**
      * Creates the game panel and sets up the buttons.
@@ -134,8 +137,11 @@ public class GamePanel extends JPanel implements KeyListener
         snakeY = BOARD_Y + TILE_SIZE;
 
         // Makes the snake start moving to the right
-        directionX = 1;
+        directionX = 0;
         directionY = 0;
+        
+        // Keeps the snake still until the player presses a key
+        gameStarted = false;
 
         // Creates the timer that controls the snake movement
         movementTimer = new Timer(16, new ActionListener() {
@@ -157,12 +163,33 @@ public class GamePanel extends JPanel implements KeyListener
      * Moves the snake in its current direction.
      *
      */
-    private void moveSnake() {
-        // Moves the snake horizontally
-        snakeX = snakeX + directionX * SNAKE_SPEED;
+    private void moveSnake()
+    {
+        // Does not move the snake until the game has started
+        if (!gameStarted) {
+            return;
+        }
 
-        // Moves the snake vertically
-        snakeY = snakeY + directionY * SNAKE_SPEED;
+        // Moves the snake to the right
+        if (directionX == 1 &&
+            snakeX < BOARD_X + (GRID_WIDTH - 1) * TILE_SIZE) {
+            snakeX = snakeX + SNAKE_SPEED;
+        }
+        // Moves the snake to the left
+        else if (directionX == -1 &&
+                 snakeX > BOARD_X) {
+            snakeX = snakeX - SNAKE_SPEED;
+        }
+        // Moves the snake down
+        else if (directionY == 1 &&
+                 snakeY < BOARD_Y + (GRID_HEIGHT - 1) * TILE_SIZE) {
+            snakeY = snakeY + SNAKE_SPEED;
+        }
+        // Moves the snake up
+        else if (directionY == -1 &&
+                 snakeY > BOARD_Y) {
+            snakeY = snakeY - SNAKE_SPEED;
+        }
     }
 
     /**
@@ -322,6 +349,9 @@ public class GamePanel extends JPanel implements KeyListener
      */
     @Override
     public void keyPressed(KeyEvent e) {
+        // Starts the game when the player presses an arrow key
+        gameStarted = true;
+        
         // Checks which key was pressed
         switch (e.getKeyCode()) {
             // Changes the snake direction to up
