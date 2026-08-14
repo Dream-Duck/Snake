@@ -1,0 +1,86 @@
+
+/**
+ * SettingsPopup.
+ * Displays the settings, rules and instructions for the game.
+ *
+ * @author Zahra Salemi
+ * @version 2026
+ */
+import java.awt.BorderLayout;
+import java.awt.Font;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+public class SettingsPopup extends JDialog
+{
+    /**
+     * Creates the settings window.
+     */
+     public SettingsPopup()
+    {
+        // Sets the title of the settings window
+        setTitle("Settings");
+
+        // Sets the size of the settings window
+        setSize(400, 450);
+
+        // Places the settings window in the centre
+        setLocationRelativeTo(null);
+
+        // Prevents the settings window from being resized
+        setResizable(false);
+
+        // Closes the settings window when the X is pressed
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+        // Creates the title at the top of the window
+        JLabel title = new JLabel("Settings", JLabel.CENTER);
+
+        // Makes the title bigger and easier to see
+        title.setFont(new Font("Arial", Font.BOLD, 22));
+
+        // Creates the area containing the rules and instructions
+        JTextArea information = new JTextArea();
+
+        // Prevents the player from changing the text
+        information.setEditable(false);
+
+        // Adds the rules and instructions
+        information.setText(
+            "Rules\n\n" +
+            "• Eat the fruit to increase your score.\n" +
+            "• The snake grows when it eats fruit.\n" +
+            "• Do not hit the walls.\n" +
+            "• Do not hit your own body.\n\n" +
+
+            "Instructions\n\n" +
+            "• Use the arrow keys to move.\n" +
+            "• Move the snake towards the fruit.\n\n" +
+
+            "Two Player Mode\n\n"
+        );
+
+        // Creates a button for closing the settings
+        JButton closeButton = new JButton("Close");
+
+        // Close the settings when the button is pressed
+        closeButton.addActionListener(e -> dispose());
+
+        // Creates a panel for the close button
+        JPanel bottomPanel = new JPanel();
+
+        // Adds the close button to the bottom panel
+        bottomPanel.add(closeButton);
+
+        // Adds the title to the top of the settings window
+        add(title, BorderLayout.NORTH);
+
+        // Adds the information to the middle of the window
+        add(information, BorderLayout.CENTER);
+
+        // Adds the close button to the bottom
+        add(bottomPanel, BorderLayout.SOUTH);
+    }
+}
