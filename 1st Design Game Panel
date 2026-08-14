@@ -56,34 +56,34 @@ public class GamePanel extends JPanel
      */
     private void draw(Graphics g)
     {
-        // Draw the white border around the playing area //
+        // Draws the white border around the playing area //
         g.setColor(Color.WHITE);
         g.drawRect(50, 50, 600, 600);
 
-        // Draw the title bar to match the first blueprint //
+        // Draws the title bar to match the first blueprint //
         g.setColor(new Color(15, 32, 90));
         g.fillRect(0, 0, WINDOW_WIDTH, 40);
 
-        // Display the title of the game //
+        // Displays the title of the game //
         g.setColor(Color.WHITE);
         g.drawString("Snake", 20, 25);
 
-        // Draw a placeholder for the help button //
+        // Draws help button //
         g.drawString("?", 660, 25);
         
         // Creates the snakes head //
         g.setColor(Color.GREEN);
-        g.fillRect(100, 100, 20, 20);
+        g.fillRect(350, 340, 20, 20);
         
         // Draws the first body part //
-        g.fillRect(80, 100, 20, 20);
+        g.fillRect(330, 340, 20, 20);
         
         // Draws the second body part //
-        g.fillRect(60, 100, 20, 20);
+        g.fillRect(310, 340, 20, 20);
         
         // Draws the fruit //
         g.setColor(Color.RED);
-        g.fillOval(300, 300, 20, 20);
+        g.fillOval(380, 340, 20, 20);
         
         // Draws the title bar //
         g.setColor(new Color(15, 32, 90));
