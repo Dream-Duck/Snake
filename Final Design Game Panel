@@ -70,6 +70,9 @@ public class GamePanel extends JPanel implements KeyListener
     // The button used to open the settings
     private JButton settingsButton;
 
+    // The button used to restart the game
+    private JButton restartButton;
+
     // The number of segments currently in the snake
     private int snakeLength;
 
@@ -121,7 +124,7 @@ public class GamePanel extends JPanel implements KeyListener
     private Timer movementTimer;
 
     // The speed of the snake animation
-    private final double SNAKE_SPEED = 2.5;
+    private final double SNAKE_SPEED = 5;
 
     // The file used to save the high score
     private final String HIGH_SCORE_FILE = "highscore.txt";
@@ -143,7 +146,7 @@ public class GamePanel extends JPanel implements KeyListener
         // Allows the panel to listen for keyboard presses
         addKeyListener(this);
 
-        // Uses manual positioning for the settings button
+        // Uses manual positioning for the buttons
         setLayout(null);
 
         // Creates the settings button
@@ -178,12 +181,76 @@ public class GamePanel extends JPanel implements KeyListener
             }
         });
 
+        // Creates the restart button
+        restartButton = new JButton("Restart Game");
+
+        // Sets the position and size of the restart button
+        restartButton.setBounds(225, 555, 150, 35);
+
+        // Changes the restart button to match the game theme
+        restartButton.setBackground(DARK_GREEN);
+        restartButton.setForeground(LIGHT_TEXT);
+
+        // Removes the focus border from the button
+        restartButton.setFocusPainted(false);
+
+        // Adds the restart button to the panel
+        add(restartButton);
+
+        // Restarts the game when the button is clicked
+        restartButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                // Restarts the game
+                restartGame();
+
+                // Gives the game panel keyboard focus again
+                requestFocusInWindow();
+            }
+        });
+
+        // Hides the restart button while the game is being played
+        restartButton.setVisible(false);
+
         // Creates space for up to 100 snake segments
         snakeGridX = new int[100];
         snakeGridY = new int[100];
         snakeX = new double[100];
         snakeY = new double[100];
 
+        // Creates the random number generator
+        random = new Random();
+
+        // Loads the saved high score
+        highScore = loadHighScore();
+
+        // Sets up the first game
+        setupGame();
+
+        // Creates the timer that controls the snake animation
+        movementTimer = new Timer(16, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                // Moves the snake
+                moveSnake();
+
+                // Redraws the game
+                repaint();
+            }
+        });
+
+        // Starts the timer
+        movementTimer.start();
+    }
+
+    /**
+     * Sets up the snake and score for a new game.
+     *
+     */
+    private void setupGame()
+    {
         // Starts the snake with four segments
         snakeLength = 4;
 
@@ -210,46 +277,27 @@ public class GamePanel extends JPanel implements KeyListener
         directionX = 0;
         directionY = 0;
 
-        // Stores the direction the player chooses
+        // Clears the player's chosen direction
         nextDirectionX = 0;
         nextDirectionY = 0;
 
-        // Keeps the game stopped until the player presses a key
+        // Keeps the game stopped until a key is pressed
         gameStarted = false;
 
-        // The snake is not moving between squares yet
+        // The snake is not moving between squares
         moving = false;
 
-        // The game has not ended
+        // The game is not over
         gameOver = false;
 
         // Starts the score at zero
         score = 0;
 
-        // Loads the saved high score
-        highScore = loadHighScore();
-
-        // Creates the random number generator
-        random = new Random();
-
-        // Creates the first fruit in a random position
+        // Creates a new fruit
         spawnFruit();
 
-        // Creates the timer that controls the snake animation
-        movementTimer = new Timer(16, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                // Moves the snake
-                moveSnake();
-
-                // Redraws the game
-                repaint();
-            }
-        });
-
-        // Starts the timer
-        movementTimer.start();
+        // Hides the restart button
+        restartButton.setVisible(false);
     }
 
     /**
@@ -338,8 +386,7 @@ public class GamePanel extends JPanel implements KeyListener
                     return;
                 }
 
-                // Moves each body segment to the previous
-                // segment's grid position
+                // Moves each body segment to the previous segment
                 for (int i = snakeLength - 1; i > 0; i--) {
                     snakeGridX[i] = snakeGridX[i - 1];
                     snakeGridY[i] = snakeGridY[i - 1];
@@ -492,10 +539,29 @@ public class GamePanel extends JPanel implements KeyListener
             saveHighScore();
         }
 
+        // Shows the restart button
+        restartButton.setVisible(true);
+
         // Stops the movement timer
         movementTimer.stop();
 
-        // Redraws the game so the red snake appears
+        // Redraws the game
+        repaint();
+    }
+
+    /**
+     * Restarts the game.
+     *
+     */
+    private void restartGame()
+    {
+        // Sets up a fresh game
+        setupGame();
+
+        // Starts the movement timer again
+        movementTimer.start();
+
+        // Redraws the game
         repaint();
     }
 
@@ -599,7 +665,21 @@ public class GamePanel extends JPanel implements KeyListener
         g.setFont(new Font("Arial", Font.BOLD, 24));
         g.drawString("Snake Game", 235, 40);
 
+        // Displays the game-over message after a collision
+        if (gameOver) {
+            // Sets the game-over text colour to black
+            g.setColor(Color.BLACK);
+            
+            g.setFont(new Font("Arial", Font.BOLD, 20));
+            g.drawString(
+                "Game Over: Press any key to continue",
+                120,
+                535
+            );
+        }
+
         // Draws the current score
+        g.setColor(LIGHT_TEXT);
         g.setFont(new Font("Arial", Font.BOLD, 18));
         g.drawString("Score: " + score, 260, 625);
 
@@ -796,8 +876,13 @@ public class GamePanel extends JPanel implements KeyListener
     @Override
     public void keyPressed(KeyEvent e)
     {
-        // Does nothing if the game is over
+        // Restarts the game if any key is pressed after Game Over
         if (gameOver) {
+            restartGame();
+
+            // Gives the game panel keyboard focus again
+            requestFocusInWindow();
+
             return;
         }
 
