@@ -1,0 +1,47 @@
+
+/**
+ * SnakeGame.
+ * Creates the game window and starts the program.
+ *
+ * @author Zahra Salemi
+ * @version 2026
+ */
+import javax.swing.JFrame;
+public class SnakeGame
+{
+    /**
+     * Starts the Snake Game.
+     */
+    public static void main(String[] args)
+    {
+        // Creates the main game window
+        JFrame window = new JFrame();
+
+        // Displays the title at the top of the window
+        window.setTitle("Snake Game");
+
+        // Closes the program when the X button is clicked
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Prevents the window from being resized
+        window.setResizable(false);
+
+        // Creates the Game Panel
+        GamePanel gamePanel = new GamePanel();
+
+        // Adds the game panel into the window
+        window.add(gamePanel);
+
+        // Resizes the window to fit the game panel
+        window.pack();
+
+        // Places the window in the centre of the screen
+        window.setLocationRelativeTo(null);
+
+        // Displays the window
+        window.setVisible(true);
+
+        // Gives the game panel keyboard focus
+        gamePanel.requestFocusInWindow();
+    }
+}
