@@ -7,7 +7,9 @@
  * @version 2026
  */
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
+import java.awt.Insets;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -15,10 +17,19 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 public class SettingsPopup extends JDialog
 {
+    // The dark green colour used throughout the game
+    private final Color DARK_GREEN = new Color(20, 90, 45);
+
+    // The light colour used for text
+    private final Color LIGHT_TEXT = new Color(235, 255, 235);
+
+    // The lighter green used for the information area
+    private final Color LIGHT_GREEN = new Color(210, 240, 210);
+
     /**
      * Creates the settings window.
      */
-     public SettingsPopup()
+    public SettingsPopup()
     {
         // Sets the title of the settings window
         setTitle("Settings");
@@ -35,11 +46,20 @@ public class SettingsPopup extends JDialog
         // Closes the settings window when the X is pressed
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        // Creates the title at the top of the window
+        // Creates the title at the top of the settings window
         JLabel title = new JLabel("Settings", JLabel.CENTER);
 
         // Makes the title bigger and easier to see
         title.setFont(new Font("Arial", Font.BOLD, 22));
+
+        // Changes the title colour
+        title.setForeground(LIGHT_TEXT);
+
+        // Creates the main panel for the settings
+        JPanel mainPanel = new JPanel(new BorderLayout());
+
+        // Changes the background to dark green
+        mainPanel.setBackground(DARK_GREEN);
 
         // Creates the area containing the rules and instructions
         JTextArea information = new JTextArea();
@@ -62,8 +82,25 @@ public class SettingsPopup extends JDialog
             "Two Player Mode\n\n"
         );
 
+        // Changes the information area's colours
+        information.setBackground(LIGHT_GREEN);
+        information.setForeground(DARK_GREEN);
+
+        // Makes the information easier to read
+        information.setFont(new Font("Arial", Font.PLAIN, 15));
+
+        // Adds some space around the text
+        information.setMargin(new Insets(15, 15, 15, 15));
+
         // Creates a button for closing the settings
         JButton closeButton = new JButton("Close");
+
+        // Changes the close button colours
+        closeButton.setBackground(DARK_GREEN);
+        closeButton.setForeground(LIGHT_TEXT);
+
+        // Removes the focus border from the button
+        closeButton.setFocusPainted(false);
 
         // Close the settings when the button is pressed
         closeButton.addActionListener(e -> dispose());
@@ -71,16 +108,22 @@ public class SettingsPopup extends JDialog
         // Creates a panel for the close button
         JPanel bottomPanel = new JPanel();
 
+        // Changes the bottom panel to dark green
+        bottomPanel.setBackground(DARK_GREEN);
+
         // Adds the close button to the bottom panel
         bottomPanel.add(closeButton);
 
         // Adds the title to the top of the settings window
-        add(title, BorderLayout.NORTH);
+        mainPanel.add(title, BorderLayout.NORTH);
 
-        // Adds the information to the middle of the window
-        add(information, BorderLayout.CENTER);
+        // Adds the information to the middle of the settings window
+        mainPanel.add(information, BorderLayout.CENTER);
 
         // Adds the close button to the bottom
-        add(bottomPanel, BorderLayout.SOUTH);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        // Adds the themed panel to the settings window
+        add(mainPanel);
     }
 }
