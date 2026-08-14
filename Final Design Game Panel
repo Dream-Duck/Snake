@@ -1,4 +1,3 @@
-
 /**
  * GamePanel.
  * Displays the main game board and game information.
@@ -63,29 +62,46 @@ public class GamePanel extends JPanel implements KeyListener
     // The button used to open the settings
     private JButton settingsButton;
 
-    // The snake's current horizontal grid position
-    private int snakeX;
+    // The number of segments currently in the snake
+    private int snakeLength;
 
-    // The snake's current vertical grid position
-    private int snakeY;
+    // Stores the horizontal grid position of each snake segment
+    private int[] snakeGridX;
+
+    // Stores the vertical grid position of each snake segment
+    private int[] snakeGridY;
+
+    // Stores the horizontal drawing position of each snake segment
+    private double[] snakeX;
+
+    // Stores the vertical drawing position of each snake segment
+    private double[] snakeY;
 
     // The direction the snake is currently moving
     private int directionX;
     private int directionY;
 
+    // The direction the player wants the snake to move
+    private int nextDirectionX;
+    private int nextDirectionY;
+
     // Keeps track of whether the game has started
     private boolean gameStarted;
-    
-    // The timer used to move the snake smoothly
+
+    // Keeps track of whether the snake is currently moving between squares
+    private boolean moving;
+
+    // The timer used to animate the snake
     private Timer movementTimer;
 
-    // The speed of the snake in pixels per timer update
-    private final int SNAKE_SPEED = 2;
+    // The speed of the snake animation
+    private final double SNAKE_SPEED = 2.5;
 
     /**
      * Creates the game panel and sets up the buttons.
      */
-    public GamePanel() {
+    public GamePanel()
+    {
         // Sets the size of the game window
         setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
 
@@ -120,7 +136,8 @@ public class GamePanel extends JPanel implements KeyListener
         // Opens the settings window when the button is clicked
         settingsButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e)
+            {
                 // Opens the settings window
                 SettingsPopup settings = new SettingsPopup();
 
@@ -132,21 +149,53 @@ public class GamePanel extends JPanel implements KeyListener
             }
         });
 
-        // Sets the starting position of the snake
-        snakeX = BOARD_X + 2 * TILE_SIZE;
-        snakeY = BOARD_Y + TILE_SIZE;
+        // Creates space for up to 100 snake segments
+        snakeGridX = new int[100];
+        snakeGridY = new int[100];
+        snakeX = new double[100];
+        snakeY = new double[100];
 
-        // Makes the snake start moving to the right
+        // Starts the snake with four segments
+        snakeLength = 4;
+
+        // Places the snake safely inside the grid
+        snakeGridX[0] = 4;
+        snakeGridY[0] = 2;
+
+        snakeGridX[1] = 3;
+        snakeGridY[1] = 2;
+
+        snakeGridX[2] = 2;
+        snakeGridY[2] = 2;
+
+        snakeGridX[3] = 1;
+        snakeGridY[3] = 2;
+
+        // Converts the grid positions into drawing positions
+        for (int i = 0; i < snakeLength; i++) {
+            snakeX[i] = BOARD_X + snakeGridX[i] * TILE_SIZE;
+            snakeY[i] = BOARD_Y + snakeGridY[i] * TILE_SIZE;
+        }
+
+        // Makes the snake start with no movement
         directionX = 0;
         directionY = 0;
-        
-        // Keeps the snake still until the player presses a key
+
+        // Stores the direction the player chooses
+        nextDirectionX = 0;
+        nextDirectionY = 0;
+
+        // Keeps the game stopped until the player presses a key
         gameStarted = false;
 
-        // Creates the timer that controls the snake movement
+        // The snake is not moving between squares yet
+        moving = false;
+
+        // Creates the timer that controls the snake animation
         movementTimer = new Timer(16, new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e)
+            {
                 // Moves the snake
                 moveSnake();
 
@@ -155,12 +204,12 @@ public class GamePanel extends JPanel implements KeyListener
             }
         });
 
-        // Starts the movement timer
+        // Starts the timer
         movementTimer.start();
     }
 
     /**
-     * Moves the snake in its current direction.
+     * Moves the snake smoothly between grid squares.
      *
      */
     private void moveSnake()
@@ -170,25 +219,97 @@ public class GamePanel extends JPanel implements KeyListener
             return;
         }
 
-        // Moves the snake to the right
-        if (directionX == 1 &&
-            snakeX < BOARD_X + (GRID_WIDTH - 1) * TILE_SIZE) {
-            snakeX = snakeX + SNAKE_SPEED;
+        // Starts a new movement when the snake reaches a grid square
+        if (!moving) {
+
+            // Applies the direction chosen by the player
+            directionX = nextDirectionX;
+            directionY = nextDirectionY;
+
+            // Checks that the snake has a direction
+            if (directionX != 0 || directionY != 0) {
+
+                // Calculates where the head wants to move
+                int newGridX = snakeGridX[0] + directionX;
+                int newGridY = snakeGridY[0] + directionY;
+
+                // Checks that the new position is inside the board
+                if (newGridX >= 0 &&
+                    newGridX < GRID_WIDTH &&
+                    newGridY >= 0 &&
+                    newGridY < GRID_HEIGHT) {
+
+                    // Moves each body segment to the previous
+                    // segment's grid position
+                    for (int i = snakeLength - 1; i > 0; i--) {
+                        snakeGridX[i] = snakeGridX[i - 1];
+                        snakeGridY[i] = snakeGridY[i - 1];
+                    }
+
+                    // Moves the head to its new grid position
+                    snakeGridX[0] = newGridX;
+                    snakeGridY[0] = newGridY;
+
+                    // Starts the smooth animation
+                    moving = true;
+                }
+            }
         }
-        // Moves the snake to the left
-        else if (directionX == -1 &&
-                 snakeX > BOARD_X) {
-            snakeX = snakeX - SNAKE_SPEED;
-        }
-        // Moves the snake down
-        else if (directionY == 1 &&
-                 snakeY < BOARD_Y + (GRID_HEIGHT - 1) * TILE_SIZE) {
-            snakeY = snakeY + SNAKE_SPEED;
-        }
-        // Moves the snake up
-        else if (directionY == -1 &&
-                 snakeY > BOARD_Y) {
-            snakeY = snakeY - SNAKE_SPEED;
+
+        // Smoothly moves every segment towards its grid position
+        if (moving) {
+
+            // Tracks whether every segment has reached its target
+            boolean allSegmentsReady = true;
+
+            // Moves every segment
+            for (int i = 0; i < snakeLength; i++) {
+
+                // Finds the target horizontal position
+                double targetX =
+                    BOARD_X + snakeGridX[i] * TILE_SIZE;
+
+                // Finds the target vertical position
+                double targetY =
+                    BOARD_Y + snakeGridY[i] * TILE_SIZE;
+
+                // Moves the segment horizontally towards its target
+                if (Math.abs(snakeX[i] - targetX) > SNAKE_SPEED) {
+
+                    if (snakeX[i] < targetX) {
+                        snakeX[i] += SNAKE_SPEED;
+                    }
+                    else {
+                        snakeX[i] -= SNAKE_SPEED;
+                    }
+
+                    allSegmentsReady = false;
+                }
+                else {
+                    snakeX[i] = targetX;
+                }
+
+                // Moves the segment vertically towards its target
+                if (Math.abs(snakeY[i] - targetY) > SNAKE_SPEED) {
+
+                    if (snakeY[i] < targetY) {
+                        snakeY[i] += SNAKE_SPEED;
+                    }
+                    else {
+                        snakeY[i] -= SNAKE_SPEED;
+                    }
+
+                    allSegmentsReady = false;
+                }
+                else {
+                    snakeY[i] = targetY;
+                }
+            }
+
+            // Allows the snake to start its next grid movement
+            if (allSegmentsReady) {
+                moving = false;
+            }
         }
     }
 
@@ -197,7 +318,8 @@ public class GamePanel extends JPanel implements KeyListener
      *
      */
     @Override
-    protected void paintComponent(Graphics g) {
+    protected void paintComponent(Graphics g)
+    {
         super.paintComponent(g);
         draw(g);
     }
@@ -206,7 +328,8 @@ public class GamePanel extends JPanel implements KeyListener
      * Draws the game board, grid, snake, fruit, and score.
      *
      */
-    private void draw(Graphics g) {
+    private void draw(Graphics g)
+    {
         // Draws the dark green top area
         g.setColor(DARK_GREEN);
         g.fillRect(0, 0, WINDOW_WIDTH, BOARD_Y);
@@ -245,7 +368,8 @@ public class GamePanel extends JPanel implements KeyListener
      * Draws the checkerboard playing grid.
      *
      */
-    private void drawGrid(Graphics g) {
+    private void drawGrid(Graphics g)
+    {
         // Goes through every row of the playing area
         for (int row = 0; row < GRID_HEIGHT; row++) {
             // Goes through every column of the playing area
@@ -315,27 +439,33 @@ public class GamePanel extends JPanel implements KeyListener
     }
 
     /**
-     * Draws the moving snake.
+     * Draws the snake and its body.
      *
      */
-    private void drawSnake(Graphics g) {
+    private void drawSnake(Graphics g)
+    {
         // Sets the snake colour
         g.setColor(SNAKE_GREEN);
 
-        // Draws the snake at its current position
-        g.fillRect(
-            (int) snakeX,
-            (int) snakeY,
-            TILE_SIZE,
-            TILE_SIZE
-        );
+        // Draws each segment of the snake
+        for (int i = 0; i < snakeLength; i++) {
+
+            // Draws the current snake segment
+            g.fillRect(
+                (int) snakeX[i],
+                (int) snakeY[i],
+                TILE_SIZE,
+                TILE_SIZE
+            );
+        }
     }
 
     /**
      * Draws the placeholder fruit.
      *
      */
-    private void drawFruit(Graphics g) {
+    private void drawFruit(Graphics g)
+    {
         // Sets the fruit colour
         g.setColor(FRUIT_RED);
 
@@ -348,34 +478,53 @@ public class GamePanel extends JPanel implements KeyListener
      *
      */
     @Override
-    public void keyPressed(KeyEvent e) {
-        // Starts the game when the player presses an arrow key
-        gameStarted = true;
-        
+    public void keyPressed(KeyEvent e)
+    {
         // Checks which key was pressed
         switch (e.getKeyCode()) {
+
             // Changes the snake direction to up
             case KeyEvent.VK_UP:
-                directionX = 0;
-                directionY = -1;
+
+                // Prevents the snake from immediately reversing
+                if (directionY != 1) {
+                    nextDirectionX = 0;
+                    nextDirectionY = -1;
+                    gameStarted = true;
+                }
                 break;
 
             // Changes the snake direction to down
             case KeyEvent.VK_DOWN:
-                directionX = 0;
-                directionY = 1;
+
+                // Prevents the snake from immediately reversing
+                if (directionY != -1) {
+                    nextDirectionX = 0;
+                    nextDirectionY = 1;
+                    gameStarted = true;
+                }
                 break;
 
             // Changes the snake direction to the left
             case KeyEvent.VK_LEFT:
-                directionX = -1;
-                directionY = 0;
+
+                // Prevents the snake from immediately reversing
+                if (directionX != 1) {
+                    nextDirectionX = -1;
+                    nextDirectionY = 0;
+                    gameStarted = true;
+                }
                 break;
 
             // Changes the snake direction to the right
             case KeyEvent.VK_RIGHT:
-                directionX = 1;
-                directionY = 0;
+
+                // Prevents the snake from immediately reversing
+                if (directionX != -1) {
+                    nextDirectionX = 1;
+                    nextDirectionY = 0;
+                    gameStarted = true;
+                }
                 break;
 
             // Does nothing for other keys
@@ -389,7 +538,8 @@ public class GamePanel extends JPanel implements KeyListener
      *
      */
     @Override
-    public void keyTyped(KeyEvent e) {
+    public void keyTyped(KeyEvent e)
+    {
         // Nothing is needed here
     }
 
@@ -398,7 +548,8 @@ public class GamePanel extends JPanel implements KeyListener
      *
      */
     @Override
-    public void keyReleased(KeyEvent e) {
+    public void keyReleased(KeyEvent e)
+    {
         // Nothing is needed here
     }
 }
