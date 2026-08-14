@@ -13,7 +13,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Random;
+import java.util.Scanner;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -54,8 +58,11 @@ public class GamePanel extends JPanel implements KeyListener
     // The colour used for the text on the dark green areas
     private final Color LIGHT_TEXT = new Color(235, 255, 235);
 
-    // The colour used for the snake
+    // The colour used for the normal snake
     private final Color SNAKE_GREEN = new Color(20, 150, 55);
+
+    // The colour used for the snake after a collision
+    private final Color SNAKE_RED = new Color(220, 40, 40);
 
     // The colour used for the fruit
     private final Color FRUIT_RED = new Color(220, 40, 40);
@@ -92,6 +99,9 @@ public class GamePanel extends JPanel implements KeyListener
     // Keeps track of whether the snake is currently moving between squares
     private boolean moving;
 
+    // Keeps track of whether the game is over
+    private boolean gameOver;
+
     // The horizontal grid position of the fruit
     private int fruitGridX;
 
@@ -101,6 +111,9 @@ public class GamePanel extends JPanel implements KeyListener
     // Stores the player's current score
     private int score;
 
+    // Stores the saved high score
+    private int highScore;
+
     // Creates a random number generator for fruit placement
     private Random random;
 
@@ -109,6 +122,9 @@ public class GamePanel extends JPanel implements KeyListener
 
     // The speed of the snake animation
     private final double SNAKE_SPEED = 2.5;
+
+    // The file used to save the high score
+    private final String HIGH_SCORE_FILE = "highscore.txt";
 
     /**
      * Creates the game panel and sets up the buttons.
@@ -204,8 +220,14 @@ public class GamePanel extends JPanel implements KeyListener
         // The snake is not moving between squares yet
         moving = false;
 
+        // The game has not ended
+        gameOver = false;
+
         // Starts the score at zero
         score = 0;
+
+        // Loads the saved high score
+        highScore = loadHighScore();
 
         // Creates the random number generator
         random = new Random();
@@ -271,6 +293,11 @@ public class GamePanel extends JPanel implements KeyListener
      */
     private void moveSnake()
     {
+        // Does not move the snake if the game is over
+        if (gameOver) {
+            return;
+        }
+
         // Does not move the snake until the game has started
         if (!gameStarted) {
             return;
@@ -290,56 +317,70 @@ public class GamePanel extends JPanel implements KeyListener
                 int newGridX = snakeGridX[0] + directionX;
                 int newGridY = snakeGridY[0] + directionY;
 
-                // Checks that the new position is inside the board
-                if (newGridX >= 0 &&
-                    newGridX < GRID_WIDTH &&
-                    newGridY >= 0 &&
-                    newGridY < GRID_HEIGHT) {
+                // Checks whether the snake has hit a wall
+                if (newGridX < 0 ||
+                    newGridX >= GRID_WIDTH ||
+                    newGridY < 0 ||
+                    newGridY >= GRID_HEIGHT) {
 
-                    // Moves each body segment to the previous
-                    // segment's grid position
-                    for (int i = snakeLength - 1; i > 0; i--) {
-                        snakeGridX[i] = snakeGridX[i - 1];
-                        snakeGridY[i] = snakeGridY[i - 1];
-                    }
+                    // Ends the game because the snake hit the wall
+                    endGame();
 
-                    // Moves the head to its new grid position
-                    snakeGridX[0] = newGridX;
-                    snakeGridY[0] = newGridY;
-
-                    // Checks whether the snake has eaten the fruit
-                    if (snakeGridX[0] == fruitGridX &&
-                        snakeGridY[0] == fruitGridY) {
-
-                        // Increases the snake length
-                        snakeLength++;
-
-                        // Increases the score
-                        score++;
-
-                        // Gives the new segment the same position
-                        // as the previous last segment
-                        snakeGridX[snakeLength - 1] =
-                            snakeGridX[snakeLength - 2];
-
-                        snakeGridY[snakeLength - 1] =
-                            snakeGridY[snakeLength - 2];
-
-                        // Gives the new segment the same drawing position
-                        // as the previous last segment
-                        snakeX[snakeLength - 1] =
-                            snakeX[snakeLength - 2];
-
-                        snakeY[snakeLength - 1] =
-                            snakeY[snakeLength - 2];
-
-                        // Creates a new fruit
-                        spawnFruit();
-                    }
-
-                    // Starts the smooth animation
-                    moving = true;
+                    return;
                 }
+
+                // Checks whether the snake has hit its own body
+                if (checkSelfCollision(newGridX, newGridY)) {
+
+                    // Ends the game because the snake hit itself
+                    endGame();
+
+                    return;
+                }
+
+                // Moves each body segment to the previous
+                // segment's grid position
+                for (int i = snakeLength - 1; i > 0; i--) {
+                    snakeGridX[i] = snakeGridX[i - 1];
+                    snakeGridY[i] = snakeGridY[i - 1];
+                }
+
+                // Moves the head to its new grid position
+                snakeGridX[0] = newGridX;
+                snakeGridY[0] = newGridY;
+
+                // Checks whether the snake has eaten the fruit
+                if (snakeGridX[0] == fruitGridX &&
+                    snakeGridY[0] == fruitGridY) {
+
+                    // Increases the snake length
+                    snakeLength++;
+
+                    // Increases the score
+                    score++;
+
+                    // Gives the new segment the same position
+                    // as the previous last segment
+                    snakeGridX[snakeLength - 1] =
+                        snakeGridX[snakeLength - 2];
+
+                    snakeGridY[snakeLength - 1] =
+                        snakeGridY[snakeLength - 2];
+
+                    // Gives the new segment the same drawing position
+                    // as the previous last segment
+                    snakeX[snakeLength - 1] =
+                        snakeX[snakeLength - 2];
+
+                    snakeY[snakeLength - 1] =
+                        snakeY[snakeLength - 2];
+
+                    // Creates a new fruit
+                    spawnFruit();
+                }
+
+                // Starts the smooth animation
+                moving = true;
             }
         }
 
@@ -401,6 +442,121 @@ public class GamePanel extends JPanel implements KeyListener
     }
 
     /**
+     * Checks whether the snake's new head position
+     * is already occupied by its body.
+     *
+     * @param newGridX the new horizontal position of the head
+     * @param newGridY the new vertical position of the head
+     * @return true if the head hits the body
+     */
+    private boolean checkSelfCollision(int newGridX, int newGridY)
+    {
+        // Checks every body segment except the head
+        for (int i = 1; i < snakeLength; i++) {
+
+            // Checks whether the new head position matches the body
+            if (newGridX == snakeGridX[i] &&
+                newGridY == snakeGridY[i]) {
+
+                // The snake has collided with itself
+                return true;
+            }
+        }
+
+        // The head has not collided with the body
+        return false;
+    }
+
+    /**
+     * Ends the game when the snake collides with something.
+     *
+     */
+    private void endGame()
+    {
+        // Marks the game as over
+        gameOver = true;
+
+        // Stops the snake from moving
+        gameStarted = false;
+
+        // Stops any movement between grid squares
+        moving = false;
+
+        // Checks whether the current score is a new high score
+        if (score > highScore) {
+
+            // Updates the high score
+            highScore = score;
+
+            // Saves the new high score
+            saveHighScore();
+        }
+
+        // Stops the movement timer
+        movementTimer.stop();
+
+        // Redraws the game so the red snake appears
+        repaint();
+    }
+
+    /**
+     * Loads the high score from the saved file.
+     *
+     * @return the saved high score
+     */
+    private int loadHighScore()
+    {
+        // Creates a file using the high score file name
+        File file = new File(HIGH_SCORE_FILE);
+
+        // Checks whether the file exists
+        if (!file.exists()) {
+            return 0;
+        }
+
+        // Tries to read the saved high score
+        try {
+            Scanner scanner = new Scanner(file);
+
+            // Reads the first number from the file
+            int savedScore = scanner.nextInt();
+
+            // Closes the scanner
+            scanner.close();
+
+            // Returns the saved score
+            return savedScore;
+        }
+        catch (Exception e) {
+
+            // Returns zero if the file cannot be read
+            return 0;
+        }
+    }
+
+    /**
+     * Saves the current high score to a file.
+     *
+     */
+    private void saveHighScore()
+    {
+        // Tries to save the high score
+        try {
+            FileWriter writer = new FileWriter(HIGH_SCORE_FILE);
+
+            // Writes the high score into the file
+            writer.write(String.valueOf(highScore));
+
+            // Closes the file
+            writer.close();
+        }
+        catch (IOException e) {
+
+            // Does nothing if the file cannot be saved
+        }
+    }
+
+    /**
      * Draws everything that appears on the game screen.
      *
      */
@@ -443,12 +599,12 @@ public class GamePanel extends JPanel implements KeyListener
         g.setFont(new Font("Arial", Font.BOLD, 24));
         g.drawString("Snake Game", 235, 40);
 
-        // Draws the score using a light colour
+        // Draws the current score
         g.setFont(new Font("Arial", Font.BOLD, 18));
         g.drawString("Score: " + score, 260, 625);
 
-        // Draws the high score using a light colour
-        g.drawString("High Score: 0", 235, 655);
+        // Draws the saved high score
+        g.drawString("High Score: " + highScore, 235, 655);
     }
 
     /**
@@ -531,12 +687,18 @@ public class GamePanel extends JPanel implements KeyListener
      */
     private void drawSnake(Graphics g)
     {
-        // Sets the snake colour
-        g.setColor(SNAKE_GREEN);
+        // Changes the snake colour to red after a collision
+        if (gameOver) {
+            g.setColor(SNAKE_RED);
+        }
+        else {
+            // Uses the normal green snake colour
+            g.setColor(SNAKE_GREEN);
+        }
 
         // Draws each segment of the snake
         for (int i = 0; i < snakeLength; i++) {
-            
+
             // Draws the current snake segment
             g.fillRect(
                 (int) snakeX[i],
@@ -555,21 +717,25 @@ public class GamePanel extends JPanel implements KeyListener
 
         // Draws the eyes depending on the direction
         if (directionX == 1 || (directionX == 0 && directionY == 0)) {
+
             // Eyes facing right
             g.fillOval(headX + 15, headY + 4, 7, 7);
             g.fillOval(headX + 15, headY + 14, 7, 7);
         }
         else if (directionX == -1) {
+
             // Eyes facing left
             g.fillOval(headX + 3, headY + 4, 7, 7);
             g.fillOval(headX + 3, headY + 14, 7, 7);
         }
         else if (directionY == -1) {
+
             // Eyes facing up
             g.fillOval(headX + 4, headY + 3, 7, 7);
             g.fillOval(headX + 14, headY + 3, 7, 7);
         }
         else if (directionY == 1) {
+
             // Eyes facing down
             g.fillOval(headX + 4, headY + 15, 7, 7);
             g.fillOval(headX + 14, headY + 15, 7, 7);
@@ -580,21 +746,25 @@ public class GamePanel extends JPanel implements KeyListener
 
         // Draws the pupils in the direction the snake is facing
         if (directionX == 1 || (directionX == 0 && directionY == 0)) {
+
             // Pupils facing right
             g.fillOval(headX + 19, headY + 6, 3, 3);
             g.fillOval(headX + 19, headY + 16, 3, 3);
         }
         else if (directionX == -1) {
+
             // Pupils facing left
             g.fillOval(headX + 3, headY + 6, 3, 3);
             g.fillOval(headX + 3, headY + 16, 3, 3);
         }
         else if (directionY == -1) {
+
             // Pupils facing up
             g.fillOval(headX + 6, headY + 3, 3, 3);
             g.fillOval(headX + 16, headY + 3, 3, 3);
         }
         else if (directionY == 1) {
+
             // Pupils facing down
             g.fillOval(headX + 6, headY + 19, 3, 3);
             g.fillOval(headX + 16, headY + 19, 3, 3);
@@ -626,6 +796,11 @@ public class GamePanel extends JPanel implements KeyListener
     @Override
     public void keyPressed(KeyEvent e)
     {
+        // Does nothing if the game is over
+        if (gameOver) {
+            return;
+        }
+
         // Checks which key was pressed
         switch (e.getKeyCode()) {
 
