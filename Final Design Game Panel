@@ -536,7 +536,7 @@ public class GamePanel extends JPanel implements KeyListener
 
         // Draws each segment of the snake
         for (int i = 0; i < snakeLength; i++) {
-
+            
             // Draws the current snake segment
             g.fillRect(
                 (int) snakeX[i],
@@ -544,6 +544,60 @@ public class GamePanel extends JPanel implements KeyListener
                 TILE_SIZE,
                 TILE_SIZE
             );
+        }
+
+        // Sets the eye colour
+        g.setColor(Color.WHITE);
+
+        // Stores the position of the snake's head
+        int headX = (int) snakeX[0];
+        int headY = (int) snakeY[0];
+
+        // Draws the eyes depending on the direction
+        if (directionX == 1 || (directionX == 0 && directionY == 0)) {
+            // Eyes facing right
+            g.fillOval(headX + 15, headY + 4, 7, 7);
+            g.fillOval(headX + 15, headY + 14, 7, 7);
+        }
+        else if (directionX == -1) {
+            // Eyes facing left
+            g.fillOval(headX + 3, headY + 4, 7, 7);
+            g.fillOval(headX + 3, headY + 14, 7, 7);
+        }
+        else if (directionY == -1) {
+            // Eyes facing up
+            g.fillOval(headX + 4, headY + 3, 7, 7);
+            g.fillOval(headX + 14, headY + 3, 7, 7);
+        }
+        else if (directionY == 1) {
+            // Eyes facing down
+            g.fillOval(headX + 4, headY + 15, 7, 7);
+            g.fillOval(headX + 14, headY + 15, 7, 7);
+        }
+
+        // Sets the pupil colour
+        g.setColor(Color.BLACK);
+
+        // Draws the pupils in the direction the snake is facing
+        if (directionX == 1 || (directionX == 0 && directionY == 0)) {
+            // Pupils facing right
+            g.fillOval(headX + 19, headY + 6, 3, 3);
+            g.fillOval(headX + 19, headY + 16, 3, 3);
+        }
+        else if (directionX == -1) {
+            // Pupils facing left
+            g.fillOval(headX + 3, headY + 6, 3, 3);
+            g.fillOval(headX + 3, headY + 16, 3, 3);
+        }
+        else if (directionY == -1) {
+            // Pupils facing up
+            g.fillOval(headX + 6, headY + 3, 3, 3);
+            g.fillOval(headX + 16, headY + 3, 3, 3);
+        }
+        else if (directionY == 1) {
+            // Pupils facing down
+            g.fillOval(headX + 6, headY + 19, 3, 3);
+            g.fillOval(headX + 16, headY + 19, 3, 3);
         }
     }
 
