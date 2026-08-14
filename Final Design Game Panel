@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -91,11 +92,20 @@ public class GamePanel extends JPanel implements KeyListener
     // Keeps track of whether the snake is currently moving between squares
     private boolean moving;
 
+    // The horizontal grid position of the fruit
+    private int fruitGridX;
+
+    // The vertical grid position of the fruit
+    private int fruitGridY;
+
+    // Creates a random number generator for fruit placement
+    private Random random;
+
     // The timer used to animate the snake
     private Timer movementTimer;
 
     // The speed of the snake animation
-    private final double SNAKE_SPEED = 2.5;
+    private final double SNAKE_SPEED = 3.5;
 
     /**
      * Creates the game panel and sets up the buttons.
@@ -191,6 +201,12 @@ public class GamePanel extends JPanel implements KeyListener
         // The snake is not moving between squares yet
         moving = false;
 
+        // Creates the random number generator
+        random = new Random();
+
+        // Creates the first fruit in a random position
+        spawnFruit();
+
         // Creates the timer that controls the snake animation
         movementTimer = new Timer(16, new ActionListener() {
             @Override
@@ -206,6 +222,41 @@ public class GamePanel extends JPanel implements KeyListener
 
         // Starts the timer
         movementTimer.start();
+    }
+
+    /**
+     * Creates a new fruit in a random empty grid square.
+     *
+     */
+    private void spawnFruit()
+    {
+        // Keeps searching until an empty square is found
+        boolean fruitOnSnake = true;
+
+        while (fruitOnSnake) {
+
+            // Chooses a random column
+            fruitGridX = random.nextInt(GRID_WIDTH);
+
+            // Chooses a random row
+            fruitGridY = random.nextInt(GRID_HEIGHT);
+
+            // Assumes the fruit is not on the snake
+            fruitOnSnake = false;
+
+            // Checks every snake segment
+            for (int i = 0; i < snakeLength; i++) {
+
+                // Checks whether the fruit is on the snake
+                if (fruitGridX == snakeGridX[i] &&
+                    fruitGridY == snakeGridY[i]) {
+
+                    // Tries another position
+                    fruitOnSnake = true;
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -348,7 +399,7 @@ public class GamePanel extends JPanel implements KeyListener
         // Draws the snake
         drawSnake(g);
 
-        // Draws the placeholder fruit
+        // Draws the fruit
         drawFruit(g);
 
         // Draws the title using a light colour
@@ -461,7 +512,7 @@ public class GamePanel extends JPanel implements KeyListener
     }
 
     /**
-     * Draws the placeholder fruit.
+     * Draws the fruit in its current grid position.
      *
      */
     private void drawFruit(Graphics g)
@@ -469,8 +520,13 @@ public class GamePanel extends JPanel implements KeyListener
         // Sets the fruit colour
         g.setColor(FRUIT_RED);
 
-        // Draws the fruit inside one of the grid squares
-        g.fillRect(300, 295, TILE_SIZE, TILE_SIZE);
+        // Draws the fruit inside its grid square
+        g.fillRect(
+            BOARD_X + fruitGridX * TILE_SIZE,
+            BOARD_Y + fruitGridY * TILE_SIZE,
+            TILE_SIZE,
+            TILE_SIZE
+        );
     }
 
     /**
