@@ -98,6 +98,9 @@ public class GamePanel extends JPanel implements KeyListener
     // The vertical grid position of the fruit
     private int fruitGridY;
 
+    // Stores the player's current score
+    private int score;
+
     // Creates a random number generator for fruit placement
     private Random random;
 
@@ -105,7 +108,7 @@ public class GamePanel extends JPanel implements KeyListener
     private Timer movementTimer;
 
     // The speed of the snake animation
-    private final double SNAKE_SPEED = 3.5;
+    private final double SNAKE_SPEED = 2.5;
 
     /**
      * Creates the game panel and sets up the buttons.
@@ -200,6 +203,9 @@ public class GamePanel extends JPanel implements KeyListener
 
         // The snake is not moving between squares yet
         moving = false;
+
+        // Starts the score at zero
+        score = 0;
 
         // Creates the random number generator
         random = new Random();
@@ -300,6 +306,36 @@ public class GamePanel extends JPanel implements KeyListener
                     // Moves the head to its new grid position
                     snakeGridX[0] = newGridX;
                     snakeGridY[0] = newGridY;
+
+                    // Checks whether the snake has eaten the fruit
+                    if (snakeGridX[0] == fruitGridX &&
+                        snakeGridY[0] == fruitGridY) {
+
+                        // Increases the snake length
+                        snakeLength++;
+
+                        // Increases the score
+                        score++;
+
+                        // Gives the new segment the same position
+                        // as the previous last segment
+                        snakeGridX[snakeLength - 1] =
+                            snakeGridX[snakeLength - 2];
+
+                        snakeGridY[snakeLength - 1] =
+                            snakeGridY[snakeLength - 2];
+
+                        // Gives the new segment the same drawing position
+                        // as the previous last segment
+                        snakeX[snakeLength - 1] =
+                            snakeX[snakeLength - 2];
+
+                        snakeY[snakeLength - 1] =
+                            snakeY[snakeLength - 2];
+
+                        // Creates a new fruit
+                        spawnFruit();
+                    }
 
                     // Starts the smooth animation
                     moving = true;
@@ -409,7 +445,7 @@ public class GamePanel extends JPanel implements KeyListener
 
         // Draws the score using a light colour
         g.setFont(new Font("Arial", Font.BOLD, 18));
-        g.drawString("Score: 0", 260, 625);
+        g.drawString("Score: " + score, 260, 625);
 
         // Draws the high score using a light colour
         g.drawString("High Score: 0", 235, 655);
