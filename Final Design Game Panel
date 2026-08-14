@@ -14,7 +14,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-
 public class GamePanel extends JPanel
 {
     // The width of the game window
@@ -36,6 +35,27 @@ public class GamePanel extends JPanel
     private final int BOARD_X = 50;
     private final int BOARD_Y = 70;
 
+    // The colour used for the dark green borders
+    private final Color DARK_GREEN = new Color(20, 90, 45);
+
+    // The colour used for the lighter checker squares
+    private final Color LIGHT_GREEN = new Color(210, 240, 210);
+
+    // The colour used for the second checker squares
+    private final Color LIGHTER_GREEN = new Color(190, 230, 190);
+
+    // The colour used for the grid lines
+    private final Color GRID_GREEN = new Color(100, 150, 100);
+
+    // The colour used for the text on the dark green areas
+    private final Color LIGHT_TEXT = new Color(235, 255, 235);
+
+    // The colour used for the snake
+    private final Color SNAKE_GREEN = new Color(20, 150, 55);
+
+    // The colour used for the fruit
+    private final Color FRUIT_RED = new Color(220, 40, 40);
+
     // The button used to open the settings
     private JButton settingsButton;
 
@@ -47,17 +67,27 @@ public class GamePanel extends JPanel
         // Sets the size of the game window
         setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
 
-        // Sets the background colour to white
-        setBackground(Color.WHITE);
+        // Sets the background colour to dark green
+        setBackground(DARK_GREEN);
 
         // Allows the panel to receive keyboard input later
         setFocusable(true);
+
+        // Uses manual positioning for the settings button
+        setLayout(null);
 
         // Creates the settings button
         settingsButton = new JButton("?");
 
         // Sets the position and size of the settings button
         settingsButton.setBounds(525, 15, 45, 40);
+
+        // Changes the settings button to match the colour theme
+        settingsButton.setBackground(DARK_GREEN);
+        settingsButton.setForeground(LIGHT_TEXT);
+
+        // Removes the focus border from the button
+        settingsButton.setFocusPainted(false);
 
         // Adds the settings button to the panel
         add(settingsButton);
@@ -74,9 +104,6 @@ public class GamePanel extends JPanel
                 settings.setVisible(true);
             }
         });
-
-        // Uses manual positioning for the settings button
-        setLayout(null);
     }
 
     /**
@@ -94,18 +121,16 @@ public class GamePanel extends JPanel
      *
      */
     private void draw(Graphics g) {
-        // Draws the title
-        g.setColor(Color.BLACK);
-        g.setFont(new Font("Arial", Font.BOLD, 24));
-        g.drawString("Snake Game", 235, 40);
+        // Draws the dark green top area
+        g.setColor(DARK_GREEN);
+        g.fillRect(0, 0, WINDOW_WIDTH, BOARD_Y);
 
-        // Draws the playing area background
-        g.setColor(new Color(180, 230, 180));
+        // Draws the dark green bottom area
         g.fillRect(
-            BOARD_X,
-            BOARD_Y,
-            GRID_WIDTH * TILE_SIZE,
-            GRID_HEIGHT * TILE_SIZE
+            0,
+            BOARD_Y + GRID_HEIGHT * TILE_SIZE,
+            WINDOW_WIDTH,
+            WINDOW_HEIGHT - (BOARD_Y + GRID_HEIGHT * TILE_SIZE)
         );
 
         // Draws the checkerboard grid
@@ -117,45 +142,17 @@ public class GamePanel extends JPanel
         // Draws the placeholder fruit
         drawFruit(g);
 
-        // Draws the thick top and bottom borders
-        g.setColor(new Color(20, 90, 45));
+        // Draws the title using a light colour
+        g.setColor(LIGHT_TEXT);
+        g.setFont(new Font("Arial", Font.BOLD, 24));
+        g.drawString("Snake Game", 235, 40);
 
-        g.fillRect(
-            BOARD_X - 5,
-            BOARD_Y - 5,
-            GRID_WIDTH * TILE_SIZE + 10,
-            8
-        );
-
-        g.fillRect(
-            BOARD_X - 5,
-            BOARD_Y + GRID_HEIGHT * TILE_SIZE - 3,
-            GRID_WIDTH * TILE_SIZE + 10,
-            8
-        );
-
-        // Draws the thin side borders
-        g.fillRect(
-            BOARD_X - 5,
-            BOARD_Y,
-            5,
-            GRID_HEIGHT * TILE_SIZE
-        );
-
-        g.fillRect(
-            BOARD_X + GRID_WIDTH * TILE_SIZE,
-            BOARD_Y,
-            5,
-            GRID_HEIGHT * TILE_SIZE
-        );
-
-        // Draws the score underneath the board
-        g.setColor(Color.BLACK);
+        // Draws the score using a light colour
         g.setFont(new Font("Arial", Font.BOLD, 18));
-        g.drawString("Score: 0", 260, 620);
+        g.drawString("Score: 0", 260, 625);
 
-        // Draws the high score underneath the score
-        g.drawString("High Score: 0", 235, 650);
+        // Draws the high score using a light colour
+        g.drawString("High Score: 0", 235, 655);
     }
 
     /**
@@ -167,12 +164,13 @@ public class GamePanel extends JPanel
         for (int row = 0; row < GRID_HEIGHT; row++) {
             // Goes through every column of the playing area
             for (int column = 0; column < GRID_WIDTH; column++) {
+
                 // Changes the colour of every second square
                 if ((row + column) % 2 == 0) {
-                    g.setColor(new Color(180, 230, 180));
+                    g.setColor(LIGHT_GREEN);
                 }
                 else {
-                    g.setColor(new Color(150, 210, 150));
+                    g.setColor(LIGHTER_GREEN);
                 }
 
                 // Draws the current square
@@ -183,8 +181,8 @@ public class GamePanel extends JPanel
                     TILE_SIZE
                 );
 
-                // Draws the darker green grid lines
-                g.setColor(new Color(60, 120, 60));
+                // Draws the green grid lines
+                g.setColor(GRID_GREEN);
                 g.drawRect(
                     BOARD_X + column * TILE_SIZE,
                     BOARD_Y + row * TILE_SIZE,
@@ -193,6 +191,41 @@ public class GamePanel extends JPanel
                 );
             }
         }
+
+        // Draws the dark green border around the playing grid
+        g.setColor(DARK_GREEN);
+
+        // Draws the top border
+        g.fillRect(
+            BOARD_X - 5,
+            BOARD_Y - 5,
+            GRID_WIDTH * TILE_SIZE + 10,
+            5
+        );
+
+        // Draws the bottom border
+        g.fillRect(
+            BOARD_X - 5,
+            BOARD_Y + GRID_HEIGHT * TILE_SIZE,
+            GRID_WIDTH * TILE_SIZE + 10,
+            5
+        );
+
+        // Draws the left border
+        g.fillRect(
+            BOARD_X - 5,
+            BOARD_Y,
+            5,
+            GRID_HEIGHT * TILE_SIZE
+        );
+
+        // Draws the right border
+        g.fillRect(
+            BOARD_X + GRID_WIDTH * TILE_SIZE,
+            BOARD_Y,
+            5,
+            GRID_HEIGHT * TILE_SIZE
+        );
     }
 
     /**
@@ -201,16 +234,13 @@ public class GamePanel extends JPanel
      */
     private void drawSnake(Graphics g) {
         // Sets the snake colour
-        g.setColor(new Color(30, 120, 50));
+        g.setColor(SNAKE_GREEN);
 
-        // Draws the snake body
-        g.fillRect(100, 100, TILE_SIZE, TILE_SIZE);
-        g.fillRect(125, 100, TILE_SIZE, TILE_SIZE);
-        g.fillRect(150, 100, TILE_SIZE, TILE_SIZE);
-
-        // Makes the head slightly darker
-        g.setColor(new Color(15, 80, 35));
-        g.fillRect(175, 100, TILE_SIZE, TILE_SIZE);
+        // Draws the snake body on the grid
+        g.fillRect(100, 95, TILE_SIZE, TILE_SIZE);
+        g.fillRect(125, 95, TILE_SIZE, TILE_SIZE);
+        g.fillRect(150, 95, TILE_SIZE, TILE_SIZE);
+        g.fillRect(175, 95, TILE_SIZE, TILE_SIZE);
     }
 
     /**
@@ -218,10 +248,10 @@ public class GamePanel extends JPanel
      *
      */
     private void drawFruit(Graphics g) {
-        // Sets the fruit colour to red
-        g.setColor(Color.RED);
+        // Sets the fruit colour
+        g.setColor(FRUIT_RED);
 
-        // Draws the fruit in the middle of the board
-        g.fillRect(300, 300, TILE_SIZE, TILE_SIZE);
+        // Draws the fruit inside one of the grid squares
+        g.fillRect(300, 295, TILE_SIZE, TILE_SIZE);
     }
 }
