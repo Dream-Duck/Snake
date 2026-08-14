@@ -12,9 +12,13 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-public class GamePanel extends JPanel
+import javax.swing.Timer;
+
+public class GamePanel extends JPanel implements KeyListener
 {
     // The width of the game window
     private final int WINDOW_WIDTH = 600;
@@ -59,19 +63,37 @@ public class GamePanel extends JPanel
     // The button used to open the settings
     private JButton settingsButton;
 
+    // The snake's current horizontal position
+    private double snakeX;
+
+    // The snake's current vertical position
+    private double snakeY;
+
+    // The direction the snake is currently moving
+    private int directionX;
+    private int directionY;
+
+    // The timer used to move the snake smoothly
+    private Timer movementTimer;
+
+    // The speed of the snake in pixels per timer update
+    private final double SNAKE_SPEED = 2.5;
+
     /**
      * Creates the game panel and sets up the buttons.
      */
-    public GamePanel()
-    {
+    public GamePanel() {
         // Sets the size of the game window
         setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
 
         // Sets the background colour to dark green
         setBackground(DARK_GREEN);
 
-        // Allows the panel to receive keyboard input later
+        // Allows the panel to receive keyboard input
         setFocusable(true);
+
+        // Allows the panel to listen for keyboard presses
+        addKeyListener(this);
 
         // Uses manual positioning for the settings button
         setLayout(null);
@@ -95,15 +117,52 @@ public class GamePanel extends JPanel
         // Opens the settings window when the button is clicked
         settingsButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 // Opens the settings window
                 SettingsPopup settings = new SettingsPopup();
 
                 // Displays the settings window
                 settings.setVisible(true);
+
+                // Gives the game panel keyboard focus again
+                requestFocusInWindow();
             }
         });
+
+        // Sets the starting position of the snake
+        snakeX = BOARD_X + 2 * TILE_SIZE;
+        snakeY = BOARD_Y + TILE_SIZE;
+
+        // Makes the snake start moving to the right
+        directionX = 1;
+        directionY = 0;
+
+        // Creates the timer that controls the snake movement
+        movementTimer = new Timer(16, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Moves the snake
+                moveSnake();
+
+                // Redraws the game
+                repaint();
+            }
+        });
+
+        // Starts the movement timer
+        movementTimer.start();
+    }
+
+    /**
+     * Moves the snake in its current direction.
+     *
+     */
+    private void moveSnake() {
+        // Moves the snake horizontally
+        snakeX = snakeX + directionX * SNAKE_SPEED;
+
+        // Moves the snake vertically
+        snakeY = snakeY + directionY * SNAKE_SPEED;
     }
 
     /**
@@ -229,18 +288,20 @@ public class GamePanel extends JPanel
     }
 
     /**
-     * Draws the first version of the snake.
+     * Draws the moving snake.
      *
      */
     private void drawSnake(Graphics g) {
         // Sets the snake colour
         g.setColor(SNAKE_GREEN);
 
-        // Draws the snake body on the grid
-        g.fillRect(100, 95, TILE_SIZE, TILE_SIZE);
-        g.fillRect(125, 95, TILE_SIZE, TILE_SIZE);
-        g.fillRect(150, 95, TILE_SIZE, TILE_SIZE);
-        g.fillRect(175, 95, TILE_SIZE, TILE_SIZE);
+        // Draws the snake at its current position
+        g.fillRect(
+            (int) snakeX,
+            (int) snakeY,
+            TILE_SIZE,
+            TILE_SIZE
+        );
     }
 
     /**
@@ -253,5 +314,61 @@ public class GamePanel extends JPanel
 
         // Draws the fruit inside one of the grid squares
         g.fillRect(300, 295, TILE_SIZE, TILE_SIZE);
+    }
+
+    /**
+     * Detects when a key is pressed.
+     *
+     */
+    @Override
+    public void keyPressed(KeyEvent e) {
+        // Checks which key was pressed
+        switch (e.getKeyCode()) {
+            // Changes the snake direction to up
+            case KeyEvent.VK_UP:
+                directionX = 0;
+                directionY = -1;
+                break;
+
+            // Changes the snake direction to down
+            case KeyEvent.VK_DOWN:
+                directionX = 0;
+                directionY = 1;
+                break;
+
+            // Changes the snake direction to the left
+            case KeyEvent.VK_LEFT:
+                directionX = -1;
+                directionY = 0;
+                break;
+
+            // Changes the snake direction to the right
+            case KeyEvent.VK_RIGHT:
+                directionX = 1;
+                directionY = 0;
+                break;
+
+            // Does nothing for other keys
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Required method for KeyListener.
+     *
+     */
+    @Override
+    public void keyTyped(KeyEvent e) {
+        // Nothing is needed here
+    }
+
+    /**
+     * Required method for KeyListener.
+     *
+     */
+    @Override
+    public void keyReleased(KeyEvent e) {
+        // Nothing is needed here
     }
 }
